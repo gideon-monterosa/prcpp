@@ -20,7 +20,7 @@ constexpr int ConsoleNumRows = 40;
 struct Header {
   char riff[4];
   uint32_t fileSize;
-  // TODO: Erweitern Sie diese Struktur für den Dateikopf.
+  // DONE: Erweitern Sie diese Struktur für den Dateikopf.
   char wave[4];
   char fmt[4];
   uint32_t remLegth;
@@ -32,7 +32,7 @@ struct Header {
   uint16_t bitsPerSamplePerChannel;
   char dataText[4];
   uint32_t bytesCount;
-  unique_ptr<int16_t[]> data;
+  int16_t *data[];
 };
 
 vector<vector<int16_t>> read(const string &filename, Header &header,
@@ -43,14 +43,40 @@ vector<vector<int16_t>> read(const string &filename, Header &header,
   ifs.open(filename, ios::binary);
 
   if (ifs) {
-    // TODO: Lesen Sie den Dateikopf und den Datenteil ein und füllen Sie die
+    // DONE: Lesen Sie den Dateikopf und den Datenteil ein und füllen Sie die
     // Rückgabewerte aus.
+    ifs.read(header.riff, 4);
+    ifs.read(reinterpret_cast<char *>(&header.fileSize), 4);
+    ifs.read(header.wave, 4);
+    ifs.read(header.fmt, 4);
+    ifs.read(reinterpret_cast<char *>(&header.remLegth), 4);
+    ifs.read(reinterpret_cast<char *>(&header.type), 2);
+    ifs.read(reinterpret_cast<char *>(&header.channelsCount), 2);
+    ifs.read(reinterpret_cast<char *>(&header.frequenzy), 4);
+    ifs.read(reinterpret_cast<char *>(&header.bytesPerSecond), 4);
+    ifs.read(reinterpret_cast<char *>(&header.bytesPerSample), 2);
+    ifs.read(reinterpret_cast<char *>(&header.bitsPerSamplePerChannel), 2);
+    ifs.read(header.dataText, 4);
 
     cout << "RIFF: " << header.riff[0] << header.riff[1] << header.riff[2]
          << header.riff[3] << endl;
     assert(header.riff[0] == 'R' && header.riff[1] == 'I' &&
            header.riff[2] == 'F' && header.riff[3] == 'F');
     cout << "file size: " << header.fileSize << endl;
+    cout << "wave: " << header.wave[0] << header.wave[1] << header.wave[2]
+         << header.wave[3] << endl;
+    cout << "fmt: " << header.fmt[0] << header.fmt[1] << header.fmt[2]
+         << header.fmt[3] << endl;
+    cout << "Remaining Length (should be 16): " << header.remLegth << endl;
+
+    cout << "Channels Count: " << header.channelsCount << endl;
+    cout << "Frequenzy in Hz: " << header.frequenzy << endl;
+    cout << "Bytes per Second: " << header.bytesPerSecond << endl;
+    cout << "Bytes per Sample all Channels: " << header.bytesPerSample << endl;
+    cout << "Bits per Sample one Channel (only supports 16): "
+         << header.bitsPerSamplePerChannel << endl;
+    cout << "dataText: " << header.dataText[0] << header.dataText[1]
+         << header.dataText[2] << header.dataText[3] << endl;
 
     unique_ptr<int16_t[]> samples = make_unique<int16_t[]>(
         0);  // TODO: Erstellen Sie hier einen Array der korrekten Grösse und
