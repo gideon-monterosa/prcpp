@@ -1,5 +1,6 @@
 #include <cassert>
 #include <chrono>
+#include <cstdint>
 #include <fstream>
 #include <functional>
 #include <iomanip>
@@ -20,6 +21,18 @@ struct Header {
   char riff[4];
   uint32_t fileSize;
   // TODO: Erweitern Sie diese Struktur für den Dateikopf.
+  char wave[4];
+  char fmt[4];
+  uint32_t remLegth;
+  uint16_t type;
+  uint16_t channelsCount;
+  uint32_t frequenzy;
+  uint32_t bytesPerSecond;
+  uint16_t bytesPerSample;
+  uint16_t bitsPerSamplePerChannel;
+  char dataText[4];
+  uint32_t bytesCount;
+  unique_ptr<int16_t[]> data;
 };
 
 vector<vector<int16_t>> read(const string &filename, Header &header,

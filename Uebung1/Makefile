@@ -14,7 +14,7 @@ OBJ := $(BUILD_DIR)/audio.o
 TARGET := $(BUILD_DIR)/wave_processor
 
 # Standardregel
-all: $(BUILD_DIR) copy_files $(TARGET)
+all: $(BUILD_DIR) $(TARGET)
 
 # Regel zum Erstellen des Ziels
 $(TARGET): $(OBJ)
@@ -28,16 +28,12 @@ $(BUILD_DIR)/%.o: $(WAVE_DIR)/%.cpp
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-# Kopiere alle Dateien aus dem Wave-Verzeichnis in das Build-Verzeichnis
-copy_files: $(BUILD_DIR)
-	cp -r $(WAVE_DIR)/* $(BUILD_DIR)/
-
 # Clean-Up
 clean:
 	rm -rf $(BUILD_DIR)
 
 # Regel zum Ausführen der Anwendung
 run: $(TARGET)
-	./$(TARGET)
+	./$(TARGET) $(ARGS)
 
-.PHONY: all clean run copy_files
+.PHONY: all clean run
