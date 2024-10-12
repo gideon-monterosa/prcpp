@@ -31,7 +31,7 @@ struct Header {
   uint16_t bytesPerSample;
   uint16_t bitsPerSamplePerChannel;
   char dataText[4];
-  uint32_t bytesCount;
+  uint32_t dataSize;
   int16_t *data[];
 };
 
@@ -57,6 +57,7 @@ vector<vector<int16_t>> read(const string &filename, Header &header,
     ifs.read(reinterpret_cast<char *>(&header.bytesPerSample), 2);
     ifs.read(reinterpret_cast<char *>(&header.bitsPerSamplePerChannel), 2);
     ifs.read(header.dataText, 4);
+    ifs.read(reinterpret_cast<char *>(&header.dataSize), 4);
 
     cout << "RIFF: " << header.riff[0] << header.riff[1] << header.riff[2]
          << header.riff[3] << endl;
@@ -77,10 +78,12 @@ vector<vector<int16_t>> read(const string &filename, Header &header,
          << header.bitsPerSamplePerChannel << endl;
     cout << "dataText: " << header.dataText[0] << header.dataText[1]
          << header.dataText[2] << header.dataText[3] << endl;
+    cout << "Data Size in bytes: " << header.dataSize << endl;
 
-    unique_ptr<int16_t[]> samples = make_unique<int16_t[]>(
-        0);  // TODO: Erstellen Sie hier einen Array der korrekten Grösse und
-             // lesen Sie den Datenteil der Datei da hinein.
+    unique_ptr<int16_t[]> samples =
+        make_unique<int16_t[]>(header.dataSize / sizeof(int16_t));
+    // TODO: Erstellen Sie hier einen Array der korrekten Grösse und
+    // lesen Sie den Datenteil der Datei da hinein.
 
     vector<vector<int16_t>> rearrangedSamples(channelCount);
     uint32_t s = 0;
