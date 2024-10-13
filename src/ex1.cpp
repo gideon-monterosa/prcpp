@@ -2,7 +2,7 @@
 
 #include "ex1.h"
 
-void sub1() {
+static void sub1() {
   std::cout << "Subtask 1.1" << std::endl;
   // Expected: 1
   int a = 0;
@@ -25,7 +25,7 @@ void sub1() {
   std::cout << d << std::endl;
 }
 
-void sub2() {
+static void sub2() {
   std::cout << "Subtask 1.2" << std::endl;
 
   int x;
@@ -85,7 +85,7 @@ double& f(double& param) {
   return param;
 }
 
-void sub3() {
+static void sub3() {
   std::cout << "Subtask 1.3" << std::endl;
   double x = 2;
   f(x);  // should calculate x^2 and save it in x
