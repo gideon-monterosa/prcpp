@@ -62,7 +62,7 @@ static void sub2() {
 
 int* max(int* first, size_t length) {
   int* max = first;
-  for (int i = 1; i < length; i++) {
+  for (size_t i = 1; i < length; i++) {
     if (*max < *(first + i)) {
       max = first + i;
     }
