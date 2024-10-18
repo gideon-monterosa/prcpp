@@ -26,7 +26,7 @@ struct Header {
   uint32_t remLegth;
   uint16_t type;
   uint16_t channelsCount;
-  uint32_t frequenzy;
+  uint32_t sampleRate;
   uint32_t bytesPerSecond;
   uint16_t bytesPerSample;
   uint16_t bitsPerSamplePerChannel;
@@ -45,19 +45,8 @@ vector<vector<int16_t>> read(const string &filename, Header &header,
   if (ifs) {
     // DONE: Lesen Sie den Dateikopf und den Datenteil ein und füllen Sie die
     // Rückgabewerte aus.
-    ifs.read(header.riff, 4);
-    ifs.read(reinterpret_cast<char *>(&header.fileSize), 4);
-    ifs.read(header.wave, 4);
-    ifs.read(header.fmt, 4);
-    ifs.read(reinterpret_cast<char *>(&header.remLegth), 4);
-    ifs.read(reinterpret_cast<char *>(&header.type), 2);
-    ifs.read(reinterpret_cast<char *>(&header.channelsCount), 2);
-    ifs.read(reinterpret_cast<char *>(&header.frequenzy), 4);
-    ifs.read(reinterpret_cast<char *>(&header.bytesPerSecond), 4);
-    ifs.read(reinterpret_cast<char *>(&header.bytesPerSample), 2);
-    ifs.read(reinterpret_cast<char *>(&header.bitsPerSamplePerChannel), 2);
-    ifs.read(header.dataText, 4);
-    ifs.read(reinterpret_cast<char *>(&header.dataSize), 4);
+
+    ifs.read(reinterpret_cast<char *>(&header), sizeof(Header));
 
     cout << "RIFF: " << header.riff[0] << header.riff[1] << header.riff[2]
          << header.riff[3] << endl;
@@ -71,7 +60,7 @@ vector<vector<int16_t>> read(const string &filename, Header &header,
     cout << "Remaining Length (should be 16): " << header.remLegth << endl;
 
     cout << "Channels Count: " << header.channelsCount << endl;
-    cout << "Frequenzy in Hz: " << header.frequenzy << endl;
+    cout << "Frequenzy in Hz: " << header.sampleRate << endl;
     cout << "Bytes per Second: " << header.bytesPerSecond << endl;
     cout << "Bytes per Sample all Channels: " << header.bytesPerSample << endl;
     cout << "Bits per Sample one Channel (only supports 16): "
@@ -80,10 +69,14 @@ vector<vector<int16_t>> read(const string &filename, Header &header,
          << header.dataText[2] << header.dataText[3] << endl;
     cout << "Data Size in bytes: " << header.dataSize << endl;
 
-    unique_ptr<int16_t[]> samples =
-        make_unique<int16_t[]>(header.dataSize / sizeof(int16_t));
-    // TODO: Erstellen Sie hier einen Array der korrekten Grösse und
+    // DONE: Erstellen Sie hier einen Array der korrekten Grösse und
     // lesen Sie den Datenteil der Datei da hinein.
+    sampleRate = header.sampleRate;
+    sampleCount = header.dataSize / sizeof(int16_t);
+    channelCount = header.channelsCount;
+    unique_ptr<int16_t[]> samples = make_unique<int16_t[]>(sampleCount);
+    ifs.read(reinterpret_cast<char *>(samples.get()),
+             sizeof(int16_t) * sampleCount);
 
     vector<vector<int16_t>> rearrangedSamples(channelCount);
     uint32_t s = 0;
@@ -106,7 +99,25 @@ vector<int> summarize(const vector<int16_t> &samples, int from, int until,
   // Distanz von einem Sample zum nächsten innerhalb des Buckets bestimmen.
   // Achtung: Die Indizes `from` und `until` sind nicht zwingend gültig, können
   // also ausserhalb von [0, samples.size()) liegen.
+  from = max(0, from);
+  until = min(static_cast<int>(samples.size()), until);
+
   vector<int> result(numBuckets);
+  int samplesPerBucket = (until - from) / numBuckets;
+  int remainder = (until - from) % samplesPerBucket;
+
+  int idx = from;
+  for (int i = 0; i < numBuckets; i++) {
+    int bucketSize = samplesPerBucket + (remainder-- > 0 ? 1 : 0);
+
+    int sum = 0;
+    for (int j = 0; j < bucketSize; j++) {
+      sum += samples[idx++];
+    }
+
+    result[i] = sum / bucketSize;
+  }
+
   return result;
 }
 
