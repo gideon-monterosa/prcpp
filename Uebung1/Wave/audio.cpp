@@ -1,5 +1,6 @@
 #include <cassert>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <functional>
@@ -12,7 +13,7 @@
 
 using namespace std;
 
-constexpr int ConsoleNumColumns = 200;
+constexpr int ConsoleNumColumns = 140;
 constexpr int ConsoleNumRows = 40;
 
 // Author: Gideon Monterosa
@@ -94,7 +95,7 @@ vector<vector<int16_t>> read(const string &filename, Header &header,
 
 vector<int> summarize(const vector<int16_t> &samples, int from, int until,
                       int numBuckets) {
-  // TODO: Fassen Sie die samples von Index `from` bis Index `until` (exklusive)
+  // Done: Fassen Sie die samples von Index `from` bis Index `until` (exklusive)
   // in `numBuckets` vielen Einträgen zusammen indem Sie die durchschnittliche
   // Distanz von einem Sample zum nächsten innerhalb des Buckets bestimmen.
   // Achtung: Die Indizes `from` und `until` sind nicht zwingend gültig, können
@@ -182,7 +183,15 @@ bool write(const string &filename, const vector<vector<int16_t>> &samples,
   ofs.open(filename, ios::binary);
 
   if (ofs) {
-    // TODO: Schreiben Sie die Samples mit dem korrekten WAVE-Header.
+    // Done: Schreiben Sie die Samples mit dem korrekten WAVE-Header.
+
+    ofs.write(reinterpret_cast<char *>(&header), sizeof(Header));
+
+    for (size_t i = 0; i < channelCount; i++) {
+      ofs.write(reinterpret_cast<const char *>(samples[i].data()),
+                sampleCount * sizeof(int16_t));
+    }
+
     return true;
   } else {
     cout << "File " << filename << " could not be opened for writing." << endl;
@@ -195,9 +204,24 @@ vector<vector<int16_t>> addEcho(const vector<vector<int16_t>> &inputSamples,
   const size_t sampleCount = inputSamples[0].size();
   const size_t channelCount = inputSamples.size();
 
-  vector<vector<int16_t>> outputSamples(channelCount);
-  // TODO: Fügen Sie eine zeitverzögerte, abgeschwächte Kopie der `inputSamples`
+  vector<vector<int16_t>> outputSamples(channelCount,
+                                        vector<int16_t>(sampleCount));
+
+  // Done: Fügen Sie eine zeitverzögerte, abgeschwächte Kopie der `inputSamples`
   // zu den `inputSamples` hinzu, und geben Sie diese Version mit Echo zurück.
+
+  for (size_t channel = 0; channel < channelCount; channel++) {
+    for (size_t i = 0; i < sampleCount; i++) {
+      if (i > sampleRate / 2) {
+        int16_t echo = inputSamples[channel][i - (sampleRate / 2)] / 3;
+        int16_t current = inputSamples[channel][i] / 3 * 2;
+        outputSamples[channel][i] = current + echo;
+      } else {
+        outputSamples[channel][i] = inputSamples[channel][i];
+      }
+    }
+  }
+
   return outputSamples;
 }
 
