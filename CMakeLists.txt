@@ -1,14 +1,20 @@
-cmake_minimum_required(VERSION 3.10)
-project(MyProject)
+cmake_minimum_required(VERSION 3.16)
 
-# Set C++ standard
+project(prcpp)
+
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Include directories
 include_directories(include)
 
-# Automatically add all .cpp files in the src directory
-file(GLOB SOURCES "src/*.cpp")
+file(GLOB_RECURSE SRC_FILES "src/*.cpp")
+file(GLOB_RECURSE HEADER_FILES "include/*.h")
 
-# Add the executable target using the collected sources
-add_executable(my_project ${SOURCES})
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_executable(prcpp ${SRC_FILES})
+
+add_custom_target(run
+    COMMAND prcpp
+    DEPENDS prcpp
+    WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
+)
