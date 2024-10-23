@@ -37,6 +37,9 @@ static void sub1() {
 
 static void sub2() {
   std::cout << "Subtask 3.2" << std::endl;
+  /*
+   * Read the solution for an in detail explanation.
+   */
 }
 
 class ScopeLogger {
