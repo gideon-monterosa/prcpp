@@ -1,7 +1,10 @@
 
 #include <sys/types.h>
 
+#include <cstddef>
 #include <iostream>
+#include <memory>
+#include <string>
 
 struct Obj {
   Obj() {
@@ -36,8 +39,39 @@ static void sub2() {
   std::cout << "Subtask 3.2" << std::endl;
 }
 
+class ScopeLogger {
+ private:
+  static size_t inline scopeCounter = 0;
+  std::string name = "";
+
+ public:
+  ScopeLogger(std::string name) : name(name) {
+    std::cout << std::string(++scopeCounter, '.') << " Enter scope " << name
+              << std::endl;
+  };
+
+  ~ScopeLogger() {
+    std::cout << std::string(scopeCounter--, '.') << " Leave scope " << name
+              << std::endl;
+  }
+};
+
+void parity(int x) {
+  ScopeLogger sl("parity");
+  if (x % 2 == 0) {
+    ScopeLogger sl("parity_if");
+    std::cout << "Even number" << std::endl;
+  } else {
+    ScopeLogger sl("parity_else");
+    std::cout << "Odd number" << std::endl;
+  }
+}
+
 static void sub3() {
   std::cout << "Subtask 3.3" << std::endl;
+  ScopeLogger sl("main");
+  parity(1);
+  parity(2);
 }
 
 void runEx3() {
