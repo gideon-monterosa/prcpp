@@ -44,16 +44,37 @@ class UniqueIntPtr {
 
  public:
   UniqueIntPtr(int* ptr) : m_ptr(ptr) {}
+
+  UniqueIntPtr(UniqueIntPtr&& other) : m_ptr(other.m_ptr) {
+    other.m_ptr = nullptr;
+  }
+
+  UniqueIntPtr& operator=(UniqueIntPtr& other) {
+    if (this != &other) {
+      if (m_ptr != nullptr) {
+        delete m_ptr;
+      }
+      m_ptr = other.m_ptr;
+      other.m_ptr = nullptr;
+    }
+    return *this;
+  }
+
   ~UniqueIntPtr() {
     if (m_ptr != nullptr) {
       delete m_ptr;
     }
   }
+
+  UniqueIntPtr(const UniqueIntPtr& other) = delete;
+  UniqueIntPtr& operator=(const UniqueIntPtr& other) = delete;
 };
 
 static void sub3() {
   std::cout << "Subtask 4.3" << std::endl;
-  // TODO: solve ex 4.3
+  // TODO: Look at this subtask again to better understand it
+  std::cout << "Look at this subtask again to better understand it"
+            << std::endl;
 }
 
 void runEx4() {
