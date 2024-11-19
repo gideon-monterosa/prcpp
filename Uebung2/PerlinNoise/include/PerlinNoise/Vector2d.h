@@ -48,26 +48,54 @@ class Vector2d {
     return Vector2d(m_x + other.m_x, m_y + other.m_y);
   }
 
-  Vector2d operator-(const Vector2d& other) const {
+  Vector2d operator-(const Vector2d& other) const& {
     return Vector2d(m_x - other.m_x, m_y - other.m_y);
   }
 
-  Vector2d operator-(Vector2d&& other) const {
-    other.m_x -= m_x;
-    other.m_y -= m_y;
-    return std::move(other);
+  Vector2d operator-(const Vector2d& other) && {
+    m_x -= other.m_x;
+    m_y -= other.m_y;
+    return std::move(*this);
   }
 
-  Vector2d operator*(double scalar) const {
+  Vector2d operator-(Vector2d&& other) {
+    Vector2d res(this->m_x - other.m_x, this->m_y - other.m_y);
+    other.m_x = 0.0;
+    other.m_y = 0.0;
+    return res;
+  }
+
+  Vector2d operator*(double scalar) const& {
     return Vector2d(m_x * scalar, m_y * scalar);
   }
 
-  friend Vector2d operator*(double scalar, const Vector2d& v) {
-    return v * scalar;
+  Vector2d operator*(double scalar) && {
+    Vector2d res(this->m_x * scalar, this->m_y * scalar);
+    this->m_x = 0.0;
+    this->m_y = 0.0;
+    return res;
   }
 
-  Vector2d operator/(double scalar) const {
+  friend Vector2d operator*(double scalar, const Vector2d& v) {
+    return Vector2d(v.m_x * scalar, v.m_y * scalar);
+  }
+
+  friend Vector2d operator*(double scalar, Vector2d&& v) {
+    Vector2d res(v.m_x * scalar, v.m_y * scalar);
+    v.m_x = 0.0;
+    v.m_y = 0.0;
+    return res;
+  }
+
+  Vector2d operator/(double scalar) const& {
     return Vector2d(m_x / scalar, m_y / scalar);
+  }
+
+  Vector2d operator/(double scalar) && {
+    Vector2d res(this->m_x / scalar, this->m_y / scalar);
+    this->m_x = 0.0;
+    this->m_y = 0.0;
+    return res;
   }
 
   double operator*(const Vector2d& other) const {
