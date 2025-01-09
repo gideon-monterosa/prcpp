@@ -33,7 +33,6 @@ struct Header {
   uint16_t bitsPerSamplePerChannel;
   char dataText[4];
   uint32_t dataSize;
-  int16_t *data[];
 };
 
 vector<vector<int16_t>> read(const string &filename, Header &header,
@@ -73,7 +72,7 @@ vector<vector<int16_t>> read(const string &filename, Header &header,
     // DONE: Erstellen Sie hier einen Array der korrekten Grösse und
     // lesen Sie den Datenteil der Datei da hinein.
     sampleRate = header.sampleRate;
-    sampleCount = header.dataSize / sizeof(int16_t);
+    sampleCount = header.dataSize / (sizeof(int16_t) * header.channelsCount);
     channelCount = header.channelsCount;
     unique_ptr<int16_t[]> samples = make_unique<int16_t[]>(sampleCount);
     ifs.read(reinterpret_cast<char *>(samples.get()),
@@ -185,11 +184,16 @@ bool write(const string &filename, const vector<vector<int16_t>> &samples,
   if (ofs) {
     // Done: Schreiben Sie die Samples mit dem korrekten WAVE-Header.
 
+    header.dataSize =
+        static_cast<uint32_t>(sampleCount * channelCount * sizeof(int16_t));
+    header.fileSize = 36 + header.dataSize;
     ofs.write(reinterpret_cast<char *>(&header), sizeof(Header));
 
-    for (size_t i = 0; i < channelCount; i++) {
-      ofs.write(reinterpret_cast<const char *>(samples[i].data()),
-                sampleCount * sizeof(int16_t));
+    for (size_t i = 0; i < sampleCount; i++) {
+      for (size_t ch = 0; ch < channelCount; ch++) {
+        int16_t sample = samples[ch][i];
+        ofs.write(reinterpret_cast<const char *>(&sample), sizeof(int16_t));
+      }
     }
 
     return true;
@@ -214,7 +218,7 @@ vector<vector<int16_t>> addEcho(const vector<vector<int16_t>> &inputSamples,
     for (size_t i = 0; i < sampleCount; i++) {
       if (i > sampleRate / 2) {
         int16_t echo = inputSamples[channel][i - (sampleRate / 2)] / 3;
-        int16_t current = inputSamples[channel][i] / 3 * 2;
+        int16_t current = inputSamples[channel][i] * 2 / 3;
         outputSamples[channel][i] = current + echo;
       } else {
         outputSamples[channel][i] = inputSamples[channel][i];
