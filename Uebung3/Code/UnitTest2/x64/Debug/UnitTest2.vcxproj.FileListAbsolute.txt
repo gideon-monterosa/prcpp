@@ -1,0 +1,1 @@
+C:\Users\kauai\source\repos\git\prcpp\students\exercises\postfix-interpreter\UnitTest2\x64\Debug\UnitTest2.vcxproj.CopyComplete
